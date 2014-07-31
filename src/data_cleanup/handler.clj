@@ -5,7 +5,7 @@
             [data-cleanup.view :refer :all]))
 
 (defroutes app-routes
-  (GET "/" [] "Hello World")
+  (GET "/" request (analyte-page request))
   (GET "/foo/" request (foopage request))
   (GET "/foo/bar/" request (barpage request))
   (route/resources "/")

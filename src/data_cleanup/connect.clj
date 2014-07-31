@@ -11,3 +11,8 @@
   []
   (j/query mysql-db
          ["select analyteID 'id', analyte 'name' from analytes ORDER BY name"]))
+
+(defn get-programmes
+  [match]
+  (j/query mysql-db
+         ["SELECT programID, year, RefCode FROM programmes WHERE RefCode RLIKE ?" match]))
