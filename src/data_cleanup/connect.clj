@@ -12,6 +12,11 @@
   (j/query mysql-db
          ["select analyteID 'id', analyte 'name' from analytes ORDER BY name"]))
 
+(defn get-refcodes
+  [analyte-id]
+  (j/query mysql-db
+           ["SELECT t2.designID 'id', t2.RefCode 'name' FROM (SELECT programID FROM programround WHERE analyteID = ?)t1 INNER JOIN (SELECT programID, RefCode, designID FROM programmes)t2 ON t1.programID = t2.programID" analyte-id]))
+
 (defn get-programmes
   [match]
   (j/query mysql-db

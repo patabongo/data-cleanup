@@ -3,9 +3,9 @@
         [data-cleanup.connect :refer :all]))
 
 (defn name-id-list
-  ([list-body-output]
+  ([list-body-output category]
     (for [x list-body-output]
-      (vector :p (vector :a {:href (str "/analyte/" (get x :id))} (get x :name))))))
+      (vector :p (vector :a {:href (str "/" category "/" (get x :id))} (get x :name))))))
 
 (defn page-template
   [title header body]
@@ -22,11 +22,18 @@
   (get headers "host"))
 
 (defn analyte-page
-  [request]
+  []
   (page-template
     "Select analyte"
     [:h1 "Select analyte"]
-    (name-id-list (get-all-analytes))))
+    (name-id-list (get-all-analytes) "analyte")))
+
+(defn refcodes-page
+  [analyte-id]
+  (page-template
+    "Select RefCode"
+    [:h1 "Select RefCode"]
+    (name-id-list (get-refcodes analyte-id) "design")))
 
 (defn foopage
   [request]
@@ -34,10 +41,3 @@
     "Foopage"
     [:h1 "Foopage"]
     [:p (str (:params request))]))
-
-(defn barpage
-  [request]
-  (page-template
-    "Barpage"
-    [:h1 "Barpage"]
-    [:p "Blank"]))

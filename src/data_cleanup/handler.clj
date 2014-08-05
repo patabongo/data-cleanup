@@ -5,9 +5,9 @@
             [data-cleanup.view :refer :all]))
 
 (defroutes app-routes
-  (GET "/" request (analyte-page request))
+  (GET "/" [] (analyte-page))
+  (GET "/analyte/:id" [id] (refcodes-page id)) 
   (GET "/foo/" request (foopage request))
-  (GET "/foo/bar/" request (barpage request))
   (route/resources "/")
   (route/not-found "Not Found"))
 
