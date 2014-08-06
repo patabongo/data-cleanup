@@ -6,7 +6,9 @@
 
 (defroutes app-routes
   (GET "/" [] (analyte-page))
-  (GET "/analyte/:id" [id] (refcodes-page id)) 
+  (GET "/analyte/:id" [id] (refcodes-switch id)) 
+  (GET "/design/:id" [id] (panel-contents-page id))
+  (POST "/regex/" request (foopage request))
   (GET "/foo/" request (foopage request))
   (route/resources "/")
   (route/not-found "Not Found"))
