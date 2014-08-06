@@ -1,2 +1,2 @@
-cmdhistory=["(get programmes \\"CTDNA|VZV\\")" "(get-programmes \\"CTDNA|VZV\\")" "(j/query mysql-db\\r\\n         [\\"SELECT * FROM programround WHERE analyteID \= ?\\" 38])" "(j/insert\! mysql-db \:programround {\:programid 99 \:distid 1 \:roundid 2 \:analyteid 99})"]
+cmdhistory=["(get programmes \\"CTDNA|VZV\\")" "(get-programmes \\"CTDNA|VZV\\")" "(j/query mysql-db\\r\\n         [\\"SELECT * FROM programround WHERE analyteID \= ?\\" 38])" "(j/insert\! mysql-db \:programround {\:programid 99 \:distid 1 \:roundid 2 \:analyteid 99})" "(get-all-analytes)"]
 eclipse.preferences.version=1
