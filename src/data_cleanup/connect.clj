@@ -34,6 +34,12 @@
            ["SELECT RefCode FROM programmes WHERE designID = ?" design-id]
            :row-fn :refcode))
 
+(defn get-programmes-from-regex
+  [regex]
+  (j/query mysql-db
+           ["SELECT year, RefCode, programName FROM programmes WHERE RefCode RLIKE ?" regex]
+           :as-arrays? true))
+
 (defn experimental-do-not-use
   []
   (j/execute! mysql-db

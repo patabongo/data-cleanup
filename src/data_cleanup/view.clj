@@ -60,6 +60,24 @@
     [:h1 "Select RefCode"]
     (name-id-list refcodes "design")))
 
+(defn check-regex-page
+  [regex analyte-id]
+  (page-template
+    "Check regex"
+    [:h1 "Check Regex"]
+    (list
+      [:p (str "The regex you entered was: " regex)]
+      [:table (results-to-table
+     (field-keywords-to-names
+       (get-programmes-from-regex regex)))]
+      [:p "If this list looks incomplete, " [:a {:href (str "/analyte/" analyte-id)} "click here"] " to edit the regex."]
+      [:p "Otherwise, "]
+      (form-to [:post "/confirm/"]
+                (hidden-field :regex regex)
+                (hidden-field :analyte-id analyte-id)
+                (submit-button "Submit!")))))
+      
+
 (defn enter-regex-page
   [analyte-id]
   (html5 (form-to [:post "/regex/"]
