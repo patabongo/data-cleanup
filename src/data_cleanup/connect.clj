@@ -54,3 +54,9 @@
   [design-id]
   (j/query mysql-db
            ["SELECT t2.designID, t2.RefCode FROM (SELECT DISTINCT i2.analyteID, i2.roundID FROM qc_proposedpanelmembers i1 INNER JOIN programround i2 ON i1.programID = i2.programID WHERE i1.designID = ?)t1 INNER JOIN (SELECT i3.analyteID, i3.programID, i3.roundID, i4.RefCode, i4.designID FROM programround i3 INNER JOIN programmes i4 ON i3.programID = i4.programID)t2 ON t1.analyteID = t2.analyteID AND t1.roundID < t2.roundID ORDER BY designID ASC LIMIT 1" design-id]))
+
+(defn get-sample-pairs
+  [design-id]
+  (j/query mysql-db
+           ["SELECT t2.pairtype, t2.pairID, t2.samplecontent, t2.sampleCode1, t2.sampleCode2 FROM (SELECT DISTINCT programID FROM qc_proposedpanelmembers WHERE designID = ?) t1 INNER JOIN samplepairs t2 ON t1.programID = t2.programID" design-id]
+           :as-arrays? true))

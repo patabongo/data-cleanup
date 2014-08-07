@@ -112,9 +112,16 @@
       [:p (last-panel-nav design-id)]
       [:h1 (get-refcode-from-design design-id)]
       [:p (next-panel-nav design-id)])
-    [:table (results-to-table
+    (list [:table (results-to-table
      (field-keywords-to-names
-       (get-panel-contents design-id)))]))
+       (get-panel-contents design-id)))]
+    (let [pairs (get-sample-pairs design-id)]
+      (if (empty? (rest pairs))
+                  (str "\n")
+                  (list [:h2 "Currently identified sample pairs:"]
+                    [:table (results-to-table
+                              (field-keywords-to-names
+                                pairs))]))))))
 
 (defn foopage
   [request]
