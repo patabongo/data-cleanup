@@ -10,12 +10,12 @@
 (defn last-panel-nav
   [design-id]
   (let [x (first (get-last-panel design-id))]
-    [:a {:href (str (get x :designid))} (str "&lt;&lt;" (get x :refcode))]))
+    [:a {:href (str "/design/" (get x :designid))} (str "&lt;&lt;" (get x :refcode))]))
 
 (defn next-panel-nav
   [design-id]
   (let [x (first (get-next-panel design-id))]
-    [:a {:href (str (get x :designid))} (str (get x :refcode) "&gt;&gt;")]))
+    [:a {:href (str "/design/" (get x :designid))} (str (get x :refcode) "&gt;&gt;")]))
 
 (defn map-tag
      [tag xs]
@@ -72,7 +72,7 @@
        (get-programmes-from-regex regex)))]
       [:p "If this list looks incomplete, " [:a {:href (str "/analyte/" analyte-id)} "click here"] " to edit the regex."]
       [:p "Otherwise, "]
-      (form-to [:post "/confirm/"]
+      (form-to [:post "/submit/"]
                 (hidden-field :regex regex)
                 (hidden-field :analyte-id analyte-id)
                 (submit-button "Submit!")))))
@@ -94,6 +94,12 @@
     (if (empty? x)
       (enter-regex-page analyte-id)
       (refcodes-page x))))
+
+(defn submit-regex
+  [regex analyte-id]
+  (do 
+    (commit-regex-to-db regex analyte-id)
+    (refcodes-page (get-refcodes analyte-id))))
 
 (defn panel-contents-page
   [design-id]

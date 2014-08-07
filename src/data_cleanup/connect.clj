@@ -40,10 +40,10 @@
            ["SELECT year, RefCode, programName FROM programmes WHERE RefCode RLIKE ?" regex]
            :as-arrays? true))
 
-(defn experimental-do-not-use
-  []
+(defn commit-regex-to-db
+  [regex analyte-id]
   (j/execute! mysql-db
-            ["INSERT INTO programround (analyteID, roundID, distID, programID) SELECT ?, @a := @a + 1 'roundID', IF(t1.RefCode RLIKE 'B$', 2, 1) distID, t1.programID FROM programmes t1, (SELECT @a := 0) as a WHERE RefCode RLIKE ?" 24 "CT"]))
+            ["INSERT INTO programround (analyteID, roundID, distID, programID) SELECT ?, @a := @a + 1 'roundID', IF(t1.RefCode RLIKE 'B$', 2, 1) distID, t1.programID FROM programmes t1, (SELECT @a := 0) as a WHERE RefCode RLIKE ?" analyte-id regex]))
 
 (defn get-last-panel
   [design-id]

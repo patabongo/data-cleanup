@@ -9,6 +9,7 @@
   (GET "/analyte/:id" [id] (refcodes-switch id)) 
   (GET "/design/:id" [id] (panel-contents-page id))
   (POST "/regex/" [regex analyte-id] (check-regex-page regex analyte-id))
+  (POST "/submit/" [regex analyte-id] (submit-regex regex analyte-id))
   (GET "/foo/" request (foopage request))
   (route/resources "/")
   (route/not-found "Not Found"))
