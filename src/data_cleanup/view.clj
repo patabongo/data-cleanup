@@ -80,7 +80,10 @@
 
 (defn enter-regex-page
   [analyte-id]
-  (html5 (form-to [:post "/regex/"]
+  (page-template
+    "Enter regex"
+    [:h1 "Regex matching"]
+    (form-to [:post "/regex/"]
                   (hidden-field :analyte-id analyte-id)
                   (label "input" "Enter a Regex to search programme RefCodes:")
                   [:br]
