@@ -10,7 +10,8 @@
   (GET "/design/:id" [id] (panel-contents-page id))
   (POST "/regex/" [regex analyte-id] (check-regex-page regex analyte-id))
   (POST "/submit/" [regex analyte-id] (submit-regex regex analyte-id))
-  (GET "/foo/" request (foopage request))
+  (POST "/pairsave/" {params :params} (pair-save params))
+  (POST "/foo/" {params :params} (foopage params))
   (route/resources "/")
   (route/not-found "Not Found"))
 

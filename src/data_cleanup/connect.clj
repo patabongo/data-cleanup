@@ -58,5 +58,32 @@
 (defn get-sample-pairs
   [design-id]
   (j/query mysql-db
-           ["SELECT t2.pairtype, t2.pairID, t2.samplecontent, t2.sampleCode1, t2.sampleCode2 FROM (SELECT DISTINCT programID FROM qc_proposedpanelmembers WHERE designID = ?) t1 INNER JOIN samplepairs t2 ON t1.programID = t2.programID" design-id]
+           ["SELECT t2.pairtype, t2.pairID, t2.samplecontent, t2.sampleCode1, t2.sampleCode2 FROM (SELECT DISTINCT programID FROM qc_proposedpanelmembers WHERE designID = ?) t1 INNER JOIN samplepairs t2 ON t1.programID = t2.programID ORDER BY t2.pairtype, t2.pairID" design-id]
            :as-arrays? true))
+
+(defn get-sample-codes
+  [design-id]
+  (j/query mysql-db
+           ["SELECT QC_PanelRandomisation AS 'sampleCode' FROM QC_ProposedPanelMembers WHERE designID = ? AND expectedqualitativeresult <> 'negative' ORDER BY QC_PanelRandomisation" design-id]
+           :row-fn :samplecode))
+
+(defn get-sample-contents
+  [design-id]
+  (j/query mysql-db
+           ["SELECT DISTINCT sampleContents FROM QC_ProposedPanelMembers WHERE designID = ? AND expectedqualitativeresult <> 'negative' ORDER BY sampleContents" design-id]
+           :row-fn :samplecontents))
+
+(defn get-prepared-vector
+  "Takes a prepared statement string, vector of keys and the http request parameters and constructs a prepared statement vector."
+  [statement fields params]
+  (into []
+        (cons 
+           statement
+          ((fn [x] (map #(get x %) fields)) params))))
+
+(defn save-sample-pair
+  [params]
+  (j/execute! mysql-db
+              (get-prepared-vector
+                "INSERT INTO samplepairs (programID, pairtype, pairID, samplecontent, sampleCode1, sampleCode2) SELECT t1.programID, ?, IFNULL(prID, 1), ?, ?, ? FROM (SELECT DISTINCT programID FROM QC_ProposedPanelMembers WHERE designID = ?)t1 LEFT JOIN (SELECT programID, pairtype, MAX(pairID) + 1 AS prID FROM samplepairs WHERE pairtype = ? GROUP BY programID, pairtype)t2 ON t1.programID = t2.programID"
+                [:pairtype :paircontents :samplecode1 :samplecode2 :design-id :pairtype] params)))

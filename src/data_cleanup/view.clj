@@ -1,6 +1,7 @@
 (ns data-cleanup.view
   (:use [hiccup core page form]
-        [data-cleanup.connect :refer :all]))
+        [data-cleanup.connect :refer :all]
+        [ring.util.response :only [redirect]]))
 
 (defn name-id-list
   ([list-body-output category]
@@ -104,6 +105,12 @@
     (commit-regex-to-db regex analyte-id)
     (refcodes-page (get-refcodes analyte-id))))
 
+(defn tableify
+  [arrs]
+  [:table (results-to-table
+            (field-keywords-to-names
+              arrs))])
+
 (defn panel-contents-page
   [design-id]
   (page-template
@@ -112,20 +119,32 @@
       [:p (last-panel-nav design-id)]
       [:h1 (get-refcode-from-design design-id)]
       [:p (next-panel-nav design-id)])
-    (list [:table (results-to-table
-     (field-keywords-to-names
-       (get-panel-contents design-id)))]
-    (let [pairs (get-sample-pairs design-id)]
-      (if (empty? (rest pairs))
-                  (str "\n")
-                  (list [:h2 "Currently identified sample pairs:"]
-                    [:table (results-to-table
-                              (field-keywords-to-names
-                                pairs))]))))))
+    (list (tableify (get-panel-contents design-id))
+   (let [pairs (get-sample-pairs design-id)]
+     (if (empty? (rest pairs))
+                 (str "\n")
+                 (list [:h2 "Currently identified sample pairs:"]
+                       (tableify pairs))))
+   [:h2 "Register a new set of paired samples:"]
+   (form-to [:post "/pairsave/"]
+             (hidden-field :design-id design-id)
+             (label "samplecode1" "Sample 1: ") (drop-down :samplecode1 (map #(vector % %) (get-sample-codes design-id)))
+             (label "samplecode2" " Sample 2: ") (drop-down :samplecode2 (map #(vector % %) (get-sample-codes design-id)))
+             [:br]
+             (label "pairtype" "Pair type: ") (drop-down :pairtype (map #(vector % %) ["Duplicate" "Dilution"]))
+             [:br]
+             (label "paircontents" "Contents: ") (drop-down :paircontents (map #(vector % %) (get-sample-contents design-id)))
+             (submit-button "Confirm!")))))
+
+(defn pair-save
+  [params]
+  (do
+    (save-sample-pair params)
+    (redirect (str "/design/" (get params :design-id)))))
 
 (defn foopage
-  [request]
+  [params]
   (page-template
     "Foopage"
     [:h1 "Foopage"]
-    [:p (str (:params request))]))
+    [:p (str (sample-pair-save-statement params))]))
