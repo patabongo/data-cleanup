@@ -17,6 +17,12 @@
   (j/query mysql-db
            ["SELECT t2.designID 'id', t2.RefCode 'name' FROM (SELECT programID FROM programround WHERE analyteID = ?)t1 INNER JOIN (SELECT programID, RefCode, designID FROM programmes)t2 ON t1.programID = t2.programID" analyte-id]))
 
+(defn get-refcodes-with-pairs
+  [analyte-id]
+  (j/query mysql-db
+           ["SELECT t2.designID 'id', t2.RefCode 'name', IFNULL(t3.lutes, '-') dilutions, IFNULL(t3.dupes, '-') duplicates FROM (SELECT programID FROM programround WHERE analyteID = ?)t1 INNER JOIN (SELECT programID, RefCode, designID FROM programmes)t2 ON t1.programID = t2.programID LEFT JOIN (SELECT i1.programID, GROUP_CONCAT(i1.duplicateconts) 'dupes', GROUP_CONCAT(i1.dilutionconts) 'lutes' FROM (SELECT programID, CASE WHEN pairtype = 'Duplicate' THEN samplecontent ELSE NULL END 'duplicateconts', CASE WHEN pairtype = 'Dilution' THEN samplecontent ELSE NULL END 'dilutionconts' FROM samplepairs ORDER BY samplecontent)i1 GROUP BY i1.programID)t3 ON t2.programID = t3.programID" analyte-id]
+           :as-arrays? true))
+
 (defn get-programmes
   [match]
   (j/query mysql-db

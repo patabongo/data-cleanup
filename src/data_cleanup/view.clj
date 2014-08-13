@@ -32,6 +32,12 @@
   [namified-results]
   (map (fn [x] (vec (cons :tr (into [] x)))) (map #(map-tag :td %) namified-results)))
 
+(defn linked-first-vector
+  [result-set]
+  (cons
+    (rest (first result-set))
+    (into [] (map #(vector [:a {:href (str "/design/" (first %))} (second %)] (nth % 2) (nth % 3)) (rest result-set)))))
+
 (defn page-template
   [title header body]
   (html5
@@ -54,12 +60,19 @@
     [:h1 "Select analyte"]
     (name-id-list (get-all-analytes) "analyte")))
 
-(defn refcodes-page
+(defn refcodes-page-back
   [refcodes]
   (page-template
     "Select RefCode"
     [:h1 "Select RefCode"]
     (name-id-list refcodes "design")))
+
+(defn refcodes-page
+  [result-set]
+  (page-template
+    "Select RefCode"
+    [:h1 "Select RefCode"]
+    (tableify (linked-first-vector result-set))))
 
 (defn check-regex-page
   [regex analyte-id]
@@ -97,7 +110,7 @@
   (let [x (get-refcodes analyte-id)]
     (if (empty? x)
       (enter-regex-page analyte-id)
-      (refcodes-page x))))
+      (refcodes-page (get-refcodes-with-pairs analyte-id)))))
 
 (defn submit-regex
   [regex analyte-id]
@@ -147,4 +160,4 @@
   (page-template
     "Foopage"
     [:h1 "Foopage"]
-    [:p (str (sample-pair-save-statement params))]))
+    [:p (str  params)]))
