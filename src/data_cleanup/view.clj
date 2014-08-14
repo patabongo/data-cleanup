@@ -6,17 +6,17 @@
 (defn name-id-list
   ([list-body-output category]
     (for [x list-body-output]
-      (vector :p (vector :a {:href (str "/" category "/" (get x :id))} (get x :name))))))
+      (vector :p (vector :a {:href (str "/data/" category "/" (get x :id))} (get x :name))))))
 
 (defn last-panel-nav
   [design-id]
   (let [x (first (get-last-panel design-id))]
-    [:a {:href (str "/design/" (get x :designid))} (str "&lt;&lt;" (get x :refcode))]))
+    [:a {:href (str "/data/design/" (get x :designid))} (str "&lt;&lt;" (get x :refcode))]))
 
 (defn next-panel-nav
   [design-id]
   (let [x (first (get-next-panel design-id))]
-    [:a {:href (str "/design/" (get x :designid))} (str (get x :refcode) "&gt;&gt;")]))
+    [:a {:href (str "/data/design/" (get x :designid))} (str (get x :refcode) "&gt;&gt;")]))
 
 (defn map-tag
      [tag xs]
@@ -36,7 +36,13 @@
   [result-set]
   (cons
     (rest (first result-set))
-    (into [] (map #(vector [:a {:href (str "/design/" (first %))} (second %)] (nth % 2) (nth % 3)) (rest result-set)))))
+    (into [] (map #(vector [:a {:href (str "/data/design/" (first %))} (second %)] (nth % 2) (nth % 3)) (rest result-set)))))
+
+(defn tableify
+  [arrs]
+  [:table (results-to-table
+            (field-keywords-to-names
+              arrs))])
 
 (defn page-template
   [title header body]
@@ -45,7 +51,7 @@
      (include-css "/css/site.css")
      [:title title]]
     [:body
-     [:a {:href "/"} "Home"]
+     [:p [:a {:href "/"} "Home"] " &gt; " [:a {:href "/data/"} "Data cleanup"]]
      header
      body]))
 
@@ -84,9 +90,9 @@
       [:table (results-to-table
      (field-keywords-to-names
        (get-programmes-from-regex regex)))]
-      [:p "If this list looks incomplete, " [:a {:href (str "/analyte/" analyte-id)} "click here"] " to edit the regex."]
+      [:p "If this list looks incomplete, " [:a {:href (str "/data/analyte/" analyte-id)} "click here"] " to edit the regex."]
       [:p "Otherwise, "]
-      (form-to [:post "/submit/"]
+      (form-to [:post "/data/submit/"]
                 (hidden-field :regex regex)
                 (hidden-field :analyte-id analyte-id)
                 (submit-button "Submit!")))))
@@ -97,7 +103,7 @@
   (page-template
     "Enter regex"
     [:h1 "Regex matching"]
-    (form-to [:post "/regex/"]
+    (form-to [:post "/data/regex/"]
                   (hidden-field :analyte-id analyte-id)
                   (label "input" "Enter a Regex to search programme RefCodes:")
                   [:br]
@@ -118,12 +124,6 @@
     (commit-regex-to-db regex analyte-id)
     (refcodes-page (get-refcodes analyte-id))))
 
-(defn tableify
-  [arrs]
-  [:table (results-to-table
-            (field-keywords-to-names
-              arrs))])
-
 (defn panel-contents-page
   [design-id]
   (page-template
@@ -139,7 +139,7 @@
                  (list [:h2 "Currently identified sample pairs:"]
                        (tableify pairs))))
    [:h2 "Register a new set of paired samples:"]
-   (form-to [:post "/pairsave/"]
+   (form-to [:post "/data/pairsave/"]
              (hidden-field :design-id design-id)
              (label "samplecode1" "Sample 1: ") (drop-down :samplecode1 (map #(vector % %) (get-sample-codes design-id)))
              (label "samplecode2" " Sample 2: ") (drop-down :samplecode2 (map #(vector % %) (get-sample-codes design-id)))
@@ -153,7 +153,7 @@
   [params]
   (do
     (save-sample-pair params)
-    (redirect (str "/design/" (get params :design-id)))))
+    (redirect (str "/data/design/" (get params :design-id)))))
 
 (defn foopage
   [params]
