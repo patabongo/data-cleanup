@@ -3,6 +3,7 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [data-cleanup.view :refer :all]
+            [data-cleanup.csv :refer :all]
             [commercial-kits.view :as view]))
 
 (defroutes app-routes
@@ -29,5 +30,10 @@
            (GET "/kitlist" {params :params} (view/kit-list-page params))
            (GET "/kit/:id" [id] (view/single-kit-page id))))
 
+(defroutes csv-routes
+  (context "/csv/:id" [id]
+           (GET "/duplicate" [] (csv id "duplicate"))
+           (GET "/dilution" [] (csv id "dilution"))))
+
 (def app
-  (handler/site (routes data-routes kit-routes app-routes)))
+  (handler/site (routes csv-routes data-routes kit-routes app-routes)))

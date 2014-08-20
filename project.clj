@@ -5,7 +5,9 @@
                  [compojure "1.1.8"]
                  [org.clojure/java.jdbc "0.3.4"]
                  [mysql/mysql-connector-java "5.1.25"]
-                 [hiccup "1.0.5"]]
+                 [hiccup "1.0.5"]
+                 [org.clojure/data.csv "0.1.2"]
+                 [lib-noir "0.8.4"]]
   :plugins [[lein-ring "0.8.11"]]
   :ring {:handler data-cleanup.handler/app}
   :profiles

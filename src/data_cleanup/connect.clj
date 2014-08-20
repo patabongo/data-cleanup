@@ -12,6 +12,12 @@
   (j/query mysql-db
          ["select analyteID 'id', analyte 'name' from analytes ORDER BY name"]))
 
+(defn get-analyte-from-id
+  [analyte-id]
+  (j/query mysql-db
+           ["SELECT analyte FROM analytes WHERE analyteID = ?" analyte-id]
+           :row-fn :analyte))
+
 (defn get-refcodes
   [analyte-id]
   (j/query mysql-db
@@ -93,3 +99,25 @@
               (get-prepared-vector
                 "INSERT INTO samplepairs (programID, pairtype, pairID, samplecontent, sampleCode1, sampleCode2) SELECT t1.programID, ?, IFNULL(prID, 1), ?, ?, ? FROM (SELECT DISTINCT programID FROM QC_ProposedPanelMembers WHERE designID = ?)t1 LEFT JOIN (SELECT programID, pairtype, MAX(pairID) + 1 AS prID FROM samplepairs WHERE pairtype = ? GROUP BY programID, pairtype)t2 ON t1.programID = t2.programID"
                 [:pairtype :paircontents :samplecode1 :samplecode2 :design-id :pairtype] params)))
+
+(defn get-pids-for-pairs
+  [analyte-id pair-type]
+   (first (j/query mysql-db
+                   ["SELECT GROUP_CONCAT(t1.programID) 'id' FROM (SELECT programID FROM programround WHERE analyteID = ?)t1 INNER JOIN (SELECT programID FROM samplepairs WHERE pairtype RLIKE ?)t2 ON t1.programID = t2.programID ORDER BY t1.programID" analyte-id pair-type]
+                   :row-fn :id)))
+
+(defn get-pair-results
+  [analyte-id pair-type]
+  (let [pids (get-pids-for-pairs analyte-id pair-type)]
+    (j/query mysql-db
+             [(str "SELECT t1.roundID, t2.logres 'sample_1_log', t3.logres 'sample_2_log' FROM (SELECT i1.roundID, i2.sampleCode1, i2.sampleCode2 FROM programround i1 INNER JOIN samplepairs i2 ON i1.programID = i2.programID WHERE i1.analyteID = ? AND i2.pairtype RLIKE ?)t1 "
+                   "INNER JOIN (SELECT resultID, sampleCode, quant_log 'logres' FROM IndRes_Score WHERE QualitativeQuantitative RLIKE 'uant' AND program_ID IN (" pids "))t2 ON t1.sampleCode1 = t2.sampleCode INNER JOIN "
+                   "(SELECT resultID, sampleCode, quant_log 'logres' FROM IndRes_Score WHERE QualitativeQuantitative RLIKE 'uant' AND program_ID IN (" pids "))t3 ON t1.sampleCode2 = t3.sampleCode AND t2.resultID = t3.resultID") analyte-id pair-type]
+             :as-arrays? true)))
+
+(defn get-pair-query
+  [analyte-id pair-type]
+  (let [pids (get-pids-for-pairs analyte-id pair-type)]
+    (str "SELECT t1.roundID, t2.logres, t3.logres FROM (SELECT i1.roundID, i2.sampleCode1, i2.sampleCode2 FROM programround i1 INNER JOIN samplepairs i2 ON i1.programID = i2.programID WHERE i1.analyteID = ? AND i2.pairtype RLIKE ?)t1 "
+                   "INNER JOIN (SELECT resultID, sampleCode, LOG10(QuantitativeResult) 'logres' FROM QC_ProgramResultsData WHERE programID IN (" pids "))t2 ON t1.sampleCode1 = t2.sampleCode INNER JOIN "
+                   "(SELECT resultID, sampleCode, LOG10(QuantitativeResult) 'logres' FROM QC_ProgramResultsData WHERE programID IN (" pids "))t3 ON t1.sampleCode2 = t3.sampleCode AND t2.resultID = t3.resultID")))

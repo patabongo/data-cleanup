@@ -74,11 +74,13 @@
     (name-id-list refcodes "design")))
 
 (defn refcodes-page
-  [result-set]
+  [result-set analyte-id]
   (page-template
     "Select RefCode"
     [:h1 "Select RefCode"]
-    (tableify (linked-first-vector result-set))))
+    (list (tableify (linked-first-vector result-set))
+          [:p [:a {:href (str "/csv/" analyte-id "/duplicate")} "Get log results for duplicate pairs"]]
+          [:p [:a {:href (str "/csv/" analyte-id "/dilution")} "Get log results for dilution pairs"]])))
 
 (defn check-regex-page
   [regex analyte-id]
@@ -116,7 +118,7 @@
   (let [x (get-refcodes analyte-id)]
     (if (empty? x)
       (enter-regex-page analyte-id)
-      (refcodes-page (get-refcodes-with-pairs analyte-id)))))
+      (refcodes-page (get-refcodes-with-pairs analyte-id) analyte-id))))
 
 (defn submit-regex
   [regex analyte-id]
