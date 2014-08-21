@@ -110,7 +110,7 @@
   [analyte-id pair-type]
   (let [pids (get-pids-for-pairs analyte-id pair-type)]
     (j/query mysql-db
-             [(str "SELECT t1.roundID, t2.logres 'sample_1_log', t3.logres 'sample_2_log' FROM (SELECT i1.roundID, i2.sampleCode1, i2.sampleCode2 FROM programround i1 INNER JOIN samplepairs i2 ON i1.programID = i2.programID WHERE i1.analyteID = ? AND i2.pairtype RLIKE ?)t1 "
+             [(str "SELECT t1.year, t1.pairID, t2.logres, t3.logres FROM (SELECT i3.year, i2.pairID, i2.sampleCode1, i2.sampleCode2 FROM programround i1 INNER JOIN samplepairs i2 ON i1.programID = i2.programID LEFT JOIN programmes i3 ON i2.programID = i3.programID WHERE i1.analyteID = ? AND i2.pairtype RLIKE ?)t1 "
                    "INNER JOIN (SELECT resultID, sampleCode, quant_log 'logres' FROM IndRes_Score WHERE QualitativeQuantitative RLIKE 'uant' AND program_ID IN (" pids "))t2 ON t1.sampleCode1 = t2.sampleCode INNER JOIN "
                    "(SELECT resultID, sampleCode, quant_log 'logres' FROM IndRes_Score WHERE QualitativeQuantitative RLIKE 'uant' AND program_ID IN (" pids "))t3 ON t1.sampleCode2 = t3.sampleCode AND t2.resultID = t3.resultID") analyte-id pair-type]
              :as-arrays? true)))
@@ -118,6 +118,6 @@
 (defn get-pair-query
   [analyte-id pair-type]
   (let [pids (get-pids-for-pairs analyte-id pair-type)]
-    (str "SELECT t1.roundID, t2.logres, t3.logres FROM (SELECT i1.roundID, i2.sampleCode1, i2.sampleCode2 FROM programround i1 INNER JOIN samplepairs i2 ON i1.programID = i2.programID WHERE i1.analyteID = ? AND i2.pairtype RLIKE ?)t1 "
+    (str "SELECT t1.year, t1.pairID, t2.logres, t3.logres FROM (SELECT i3.year, i2.pairID, i2.sampleCode1, i2.sampleCode2 FROM programround i1 INNER JOIN samplepairs i2 ON i1.programID = i2.programID LEFT JOIN programmes i3 ON i2.programID = i3.programID WHERE i1.analyteID = ? AND i2.pairtype RLIKE ?)t1 "
                    "INNER JOIN (SELECT resultID, sampleCode, LOG10(QuantitativeResult) 'logres' FROM QC_ProgramResultsData WHERE programID IN (" pids "))t2 ON t1.sampleCode1 = t2.sampleCode INNER JOIN "
                    "(SELECT resultID, sampleCode, LOG10(QuantitativeResult) 'logres' FROM QC_ProgramResultsData WHERE programID IN (" pids "))t3 ON t1.sampleCode2 = t3.sampleCode AND t2.resultID = t3.resultID")))
