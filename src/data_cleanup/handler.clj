@@ -19,7 +19,8 @@
           (POST "/regex/" [regex analyte-id] (check-regex-page regex analyte-id))
           (POST "/submit/" [regex analyte-id] (submit-regex regex analyte-id))
           (POST "/pairsave/" {params :params} (pair-save params))
-          (POST "/foo/" {params :params} (foopage params))))
+          (GET "/catnegs/:id" [id] (catnegs id))
+          (POST "/negatives/" {params :params} (negatives params))))
 
 (defroutes kit-routes
   (context "/kits" []

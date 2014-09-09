@@ -131,3 +131,21 @@
                  "AND i2.QualitativeResult RLIKE 'neg|pos|det') t2 ON t1.sampleCode = t2.sampleCode AND t1.programID = t2.programID WHERE "
                  "t1.samplecategory RLIKE 'negative|not detected' GROUP BY t1.sampleID, t1.sampleCode, t1.samplecontents") (first (get-pids-for-negs analyte-id)) analyte-id]
            :as-arrays? true))
+
+(defn sample-exp
+  [analyte-id]
+  (j/query mysql-db
+           ["SELECT o1.sampleCode, o1.SampleContents, ROUND(SUM( IF( o1.ExpectedQualitativeResult = o2.QualitativeResult, 1, 0) ) / COUNT(*) * 100, 1) 'percentage', o1.sampleID FROM (SELECT t2.sampleID, t2.QC_PanelRandomisation 'sampleCode', t2.SampleContents, t2.ExpectedQualitativeResult FROM programRound t1 INNER JOIN QC_ProposedPanelMembers t2 ON t1.programID = t2.programID WHERE t1.analyteID = ? AND t2.ExpectedQualitativeResult RLIKE 'neg|not' AND negativeType IS NULL)o1 INNER JOIN (SELECT sampleCode, QualitativeResult FROM QC_ProgramResultsData WHERE QualitativeResult <> '' AND QualitativeResult <> ' ')o2 ON o1.sampleCode = o2.sampleCode GROUP BY o1.sampleID" analyte-id]
+           :as-arrays? true))
+
+(defn update-neg-categories
+  [params]
+  (apply j/db-do-prepared mysql-db
+                    "UPDATE QC_ProposedPanelMembers SET negativeType = ? WHERE sampleID = ?" (map #(vector % %2) (vals params) (keys params))))
+  
+
+(defn display-negatives
+  [analyte-id]
+  (j/query mysql-db
+           ["SELECT o1.sampleCode, o1.SampleContents, ROUND(SUM( IF( o1.ExpectedQualitativeResult = o2.QualitativeResult, 1, 0) ) / COUNT(*) * 100, 1) 'percentage', o1.negativeType FROM (SELECT t2.sampleID, t2.QC_PanelRandomisation 'sampleCode', t2.SampleContents, t2.ExpectedQualitativeResult, t2.negativeType FROM programRound t1 INNER JOIN QC_ProposedPanelMembers t2 ON t1.programID = t2.programID WHERE t1.analyteID = ? AND t2.ExpectedQualitativeResult RLIKE 'neg|not')o1 INNER JOIN (SELECT sampleCode, QualitativeResult FROM QC_ProgramResultsData WHERE QualitativeResult <> '' AND QualitativeResult <> ' ')o2 ON o1.sampleCode = o2.sampleCode GROUP BY o1.sampleID" analyte-id]
+           :as-arrays? true))

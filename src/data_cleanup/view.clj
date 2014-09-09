@@ -157,9 +157,36 @@
     (save-sample-pair params)
     (redirect (str "/data/design/" (get params :design-id)))))
 
-(defn foopage
+(defn negatives-marked-up
+  [analyte-id]
+  (cons
+    (first (sample-exp analyte-id))
+  (map 
+    #(conj (into [] (butlast %)) (list "True negative" (radio-button (last %) false "true") "Specificity" (radio-button (last %) false "specificity")))
+    (rest (sample-exp analyte-id)))))
+
+(defn do-forms
+  [analyte-id]
+  (form-to [:post "/data/negatives/"]
+           [:table (results-to-table (field-keywords-to-names (negatives-marked-up analyte-id)))]
+           (hidden-field :analyte-id analyte-id)
+           [:p
+           (submit-button "Categorise")]))
+  
+
+(defn catnegs
+  [analyte-id]
+  (page-template
+    "Categorise negative samples"
+    [:h1 "Categorise negative samples"]
+    (do-forms analyte-id)))
+
+
+(defn negatives 
   [params]
   (page-template
-    "Foopage"
-    [:h1 "Foopage"]
-    [:p (str  params)]))
+    "Negative samples"
+    [:h1 "Negatives"]
+    (do
+      (update-neg-categories (dissoc params :analyte-id))
+      (tableify (display-negatives (get params :analyte-id))))))
