@@ -147,5 +147,10 @@
 (defn display-negatives
   [analyte-id]
   (j/query mysql-db
-           ["SELECT o1.sampleCode, o1.SampleContents, ROUND(SUM( IF( o1.ExpectedQualitativeResult = o2.QualitativeResult, 1, 0) ) / COUNT(*) * 100, 1) 'percentage', o1.negativeType FROM (SELECT t2.sampleID, t2.QC_PanelRandomisation 'sampleCode', t2.SampleContents, t2.ExpectedQualitativeResult, t2.negativeType FROM programRound t1 INNER JOIN QC_ProposedPanelMembers t2 ON t1.programID = t2.programID WHERE t1.analyteID = ? AND t2.ExpectedQualitativeResult RLIKE 'neg|not')o1 INNER JOIN (SELECT sampleCode, QualitativeResult FROM QC_ProgramResultsData WHERE QualitativeResult <> '' AND QualitativeResult <> ' ')o2 ON o1.sampleCode = o2.sampleCode GROUP BY o1.sampleID" analyte-id]
+           ["SELECT o1.sampleCode, o1.SampleContents, ROUND(SUM( IF( o1.ExpectedQualitativeResult = o2.QualitativeResult, 1, 0) ) / COUNT(*) * 100, 1) 'percentage', o1.negativeType FROM (SELECT t2.sampleID, t2.QC_PanelRandomisation 'sampleCode', t2.SampleContents, t2.ExpectedQualitativeResult, t2.negativeType FROM programRound t1 INNER JOIN QC_ProposedPanelMembers t2 ON t1.programID = t2.programID WHERE t1.analyteID = ? AND t2.samplecategory = 'negative')o1 INNER JOIN (SELECT sampleCode, QualitativeResult FROM QC_ProgramResultsData WHERE QualitativeResult <> '' AND QualitativeResult <> ' ')o2 ON o1.sampleCode = o2.sampleCode GROUP BY o1.sampleID" analyte-id]
            :as-arrays? true))
+
+(defn get-analytes-negs
+  []
+  (j/query mysql-db
+           ["SELECT t1.analyteID, t1.analyte, COUNT(t3.negativeType) 'count' FROM analytes t1 INNER JOIN programRound t2 ON t1.analyteID = t2.analyteID INNER JOIN QC_ProposedPanelMembers t3 ON t2.programID = t3.programID GROUP BY t1.analyte"]))

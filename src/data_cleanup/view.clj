@@ -18,6 +18,19 @@
   (let [x (first (get-next-panel design-id))]
     [:a {:href (str "/data/design/" (get x :designid))} (str (get x :refcode) "&gt;&gt;")]))
 
+(defn linkify-analytes
+  [x]
+  (vector [:a {:href (str "/data/analyte/" (get x :analyteid))} (get x :analyte)] 
+          (if (zero? (get x :count))
+            [:a {:href (str "/data/catnegs/" (get x :analyteid))} "+"]
+            "")))
+
+(defn return-analytes
+  []
+  (cons
+    [:analyte :negatives]
+    (map linkify-analytes (get-analytes-negs))))
+
 (defn map-tag
      [tag xs]
      (map (fn [x] [tag x]) xs))
@@ -64,7 +77,7 @@
   (page-template
     "Select analyte"
     [:h1 "Select analyte"]
-    (name-id-list (get-all-analytes) "analyte")))
+    (tableify (return-analytes))))
 
 (defn refcodes-page-back
   [refcodes]
@@ -172,7 +185,6 @@
            (hidden-field :analyte-id analyte-id)
            [:p
            (submit-button "Categorise")]))
-  
 
 (defn catnegs
   [analyte-id]
@@ -180,7 +192,6 @@
     "Categorise negative samples"
     [:h1 "Categorise negative samples"]
     (do-forms analyte-id)))
-
 
 (defn negatives 
   [params]
